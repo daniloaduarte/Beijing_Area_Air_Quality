@@ -1,0 +1,147 @@
+### Toda a análise será feita em Jupyter Notebook!
+
+### Começamos importando as bibliotecas que serão usadas, extraindo os arquivos e criando um Dataframe
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+%matplotlib inline
+import seaborn as sns
+from collections import Counter 
+
+df1 = pd.read_csv('PRSA_Data_Aotizhongxin_20130301-20170228.csv')
+df1.head()
+
+df1.describe()
+df1.info()
+
+
+### A principio analisaremos o comportamento dos valores de concentração dos poluentes particulados PM10 e PM2.5 com relação aos
+### demais parâmetros, desde os parametros temporais (data e hora) até os parâmetros físicos (temperatura e pressão)
+
+### Começamos com as analises mais simples, como ver a variação da concentração ao longo do dia
+
+
+# dia 1, mes 3, ano 2013
+plt.plot(df1[(df1['year'] == 2013) & (df1['month'] == 3) & (df1['day'] == 1) ]['hour'],df1[(df1['year'] == 2013) & (df1['month'] == 3) & (df1['day'] == 1) ]['PM2.5'])
+
+# dia 3, mes 3, ano 2016
+plt.plot(df1[(df1['year'] == 2016) & (df1['month'] == 3) & (df1['day'] == 3) ]['hour'],df1[(df1['year'] == 2016) & (df1['month'] == 3) & (df1['day'] == 3) ]['PM2.5'])
+
+
+## -Vê-se que as concentrações variam consideravelmente ao longo do dia.
+
+### Para uma visão mais abrangente, plotamos a média anual das concentrações para cada hora
+
+fig, axs = plt.subplots(1, 1, constrained_layout=True,figsize = (12,8))
+for i in range(0,5):
+    axs.plot(range(0, len(Counter(df1[df1['year']==(2013+i)]['hour']).keys())),df1[df1['year']==(2013+i)].groupby('hour').mean()['PM10'],label = 'y'+str(2013+i))
+axs.legend(loc='upper right', bbox_to_anchor=(1.2, 1))
+axs.set_title('PM10 concentration by hour along years from 2013 to 2017 (anualy medium)')
+axs.set_xlabel('Hour')
+axs.set_ylabel('PM10 Concentration')
+
+
+fig, axs = plt.subplots(1, 1, constrained_layout=True,figsize = (12,8))
+for i in range(0,5):
+    axs.plot(range(0, len(Counter(df1[df1['year']==(2013+i)]['hour']).keys())),df1[df1['year']==(2013+i)].groupby('hour').mean()['PM2.5'],label = 'y'+str(2013+i))
+axs.legend(loc='upper right', bbox_to_anchor=(1.2, 1))
+axs.set_title('PM2.5 concentration by hour along years from 2013 to 2017 (anualy medium)')
+axs.set_xlabel('Hour')
+axs.set_ylabel('PM2.5 Concentration')
+
+##- Vê-se aqui uma tendencia clara de que os níveis de concentração dos poluentes em questão são maiores no período da noite (entre 20h e 5h).
+##- A meu ver hà duas possibilidades, ou está ligado com fatores físicos relacionados ao dia e noite (temperatura e pressão), ou as indústrias
+##- da região tendem a lançar seus resíduos gasosos no período noturno.
+
+### Para se testar tais hipóteses, começaremos avaliando os parâmetros físicos.
+
+sns.pairplot(df1[(df1['year'] == 2013) & (df1['month'] == 3) & (df1['day'] == 1)][['TEMP','PRES','DEWP','RAIN','PM10','PM2.5']])
+
+sns.pairplot(df1[(df1['year'] == 2013) & (df1['month'] == 3)][['TEMP','PRES','DEWP','RAIN','PM10','PM2.5']])
+
+##- Não consegui detectar nenhuma correlação entre as concentrações e os parâmetros físicos. Fica valida então a hipótese de que as
+##- emissões ocorrem no período noturno.
+
+### Continuaremos com visualizações, mas agora usando todas as 12 estações de medição
+
+df2 = pd.read_csv('PRSA_Data_Changping_20130301-20170228.csv')
+df3 = pd.read_csv('PRSA_Data_Dingling_20130301-20170228.csv')
+df4 = pd.read_csv('PRSA_Data_Dongsi_20130301-20170228.csv')
+df5 = pd.read_csv('PRSA_Data_Guanyuan_20130301-20170228.csv')
+df6 = pd.read_csv('PRSA_Data_Gucheng_20130301-20170228.csv')
+df7 = pd.read_csv('PRSA_Data_Huairou_20130301-20170228.csv')
+df8 = pd.read_csv('PRSA_Data_Nongzhanguan_20130301-20170228.csv')
+df9 = pd.read_csv('PRSA_Data_Shunyi_20130301-20170228.csv')
+df10 = pd.read_csv('PRSA_Data_Tiantan_20130301-20170228.csv')
+df11 = pd.read_csv('PRSA_Data_Wanliu_20130301-20170228.csv')
+df12 = pd.read_csv('PRSA_Data_Wanshouxigong_20130301-20170228.csv')
+
+dft = pd.concat([df1,df2,df3,df4,df5,df6,df7,df8,df9,df10,df11,df12])
+
+# PM10 concentration max in month 4, year 2013
+plt.plot(range(0, len(Counter(df1[(df1['year'] == 2013) & (df1['month'] == 4) ]['day']).keys())),df1[(df1['year'] == 2013) & (df1['month'] == 4) ].groupby('day').max()['PM10'])
+
+# PM10 concentration mean in month 4, year 2013
+plt.plot(range(0, len(Counter(df1[(df1['year'] == 2013) & (df1['month'] == 4) ]['day']).keys())),df1[(df1['year'] == 2013) & (df1['month'] == 4) ].groupby('day').mean()['PM10'])
+
+# PM10 concentration max in month 7, year 2013
+plt.plot(range(0, len(Counter(df1m7['day']).keys())),df1m7.groupby('day').max()['PM10'])
+
+# PM10 concentration mean in month 7, year 2013
+plt.plot(range(0, len(Counter(df1m4['day']).keys())),df1m4.groupby('day').mean()['PM10'])
+
+##- Podemos ver que os níveis oscilam ao longo do mes, quase que seguindo um padrão semanal
+
+# Gráficos da variação da média mensal ao longo de todo o período de tempo avaliado
+fig, axs = plt.subplots(1, 1, constrained_layout=True,figsize = (12,8))
+for i in range(0,5):
+    axs.plot(range(0, len(Counter(df1[df1['year']==(2013+i)]['month']).keys())),df1[df1['year']==(2013+i)].groupby('month').mean()['PM10'],label = 'y'+str(2013+i))
+axs.legend(loc='upper right', bbox_to_anchor=(1.2, 1))
+axs.set_title('PM10 mensal medium concentration along years from 2013 to 2017')
+axs.set_xlabel('Month')
+axs.set_ylabel('PM10 Concentration')
+
+fig, axs = plt.subplots(1, 1, constrained_layout=True,figsize = (12,8))
+for i in range(0,5):
+    axs.plot(range(0, len(Counter(df1[df1['year']==(2013+i)]['month']).keys())),df1[df1['year']==(2013+i)].groupby('month').mean()['PM2.5'],label = 'y'+str(2013+i))
+axs.legend(loc='upper right', bbox_to_anchor=(1.2, 1))
+axs.set_title('PM2.5 mensal medium concentration along years from 2013 to 2017')
+axs.set_xlabel('Month')
+axs.set_ylabel('PM2.5 Concentration')
+
+##- Vê-se que em quase todos os anos, as médias são maiores no começo e fim do ano, tendo uma faixa menor no meio (entre o mes 4 e 9)
+
+##- Das análises anteriores vê-se que os fatores que mais influenciam são a hora, o dia e o mês, e que o ano também exerce um pouco de influencia.
+##- Logo usaremos esses parâmetros no nosso modelo. Tentaremos a principio um modelo de regressão linear
+
+### MODELO
+
+##- Começamos limpando os dados do DataFrame, tirando linhas com valores nulos, para não dar erro no modelo
+
+dftx = dft.dropna()
+
+y1 = dftx['PM10']
+y2 = dftx['PM2.5']
+X = dftx[['hour','day','month']]
+
+from sklearn.model_selection import train_test_split
+
+X_train, X_test, y_train, y_test = train_test_split(X, y1, test_size=0.3, random_state=101)
+
+from sklearn.linear_model import LinearRegression
+
+lm1 = LinearRegression()
+
+lm1.fit(X_train,y_train)
+
+print('Coefficients: \n', lm1.coef_)
+
+predictions = lm1.predict( X_test)
+
+plt.scatter(y_test,predictions)
+plt.xlabel('Y Test')
+plt.ylabel('Predicted Y')
+
+##- V^-se que o modelo está longe de estar bom.. Minha análise acaba por aqui, faltou tempo para refinaento. O que eu faria a partir daqui
+##- seria tentar refinar o modelo, melhorando os parâmetros, ou tentar usar outro método de Machine Learning.
